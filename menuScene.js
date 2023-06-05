@@ -1,8 +1,8 @@
 /* global Phaser */
 // Copyright (c) 2020 Janet Do All rights reserved
 //
-// Created by: Janet Do
-// Created on: Sep 2020
+// Created by: Alyssia fung
+// Created on: June 2023
 // This is the menu scene
 
 /**
@@ -32,8 +32,8 @@ class MenuScene extends Phaser.Scene {
    */
   preload() {
     console.log("Menu Scene");
-    this.load.image("menuSceneBackground", "./assets/aliens_screen_image2.jpg");
-    this.load.image("startButton", "./assets/start.png");
+    this.load.image("menuSceneBackground", "./assets/festive racing.png");
+    this.load.image("startButton", "./assets/startbutton.png");
   }
 
   /**
