@@ -71,6 +71,7 @@ class GameScene extends Phaser.Scene {
     this.createCar(4)
     this.createCar(5)
     this.createCar(6)
+    
 
     // create a group for candies
     this.candyGroup = this.physics.add.group()
@@ -78,41 +79,43 @@ class GameScene extends Phaser.Scene {
     this.spawnCandy()
     this.spawnCandy()
     
-
-    // Collision between player and candy
+// Collision between player and candy
 this.physics.add.overlap(
   this.player,
   this.candyGroup,
-  function (playerCollide, candyCollide) {
-    this.sound.play("collect")
+  (playerCollide, candyCollide) => {
     candyCollide.destroy()
-    this.score += 10
+    this.score += 1
     this.scoreText.setText("Score: " + this.score.toString())
     this.spawnCandy()
-  }.bind(this)
-)
+  }
+);
 
 // Collision between player and enemy car
 this.physics.add.collider(
   this.player,
   this.carGroup,
-  function (playerCollide, carCollide) {
-    this.sound.play("bomb")
-    carCollide.destroy()
-    playerCollide.setTint(0xff0000)
+  (playerCollide, carCollide) => {
+    carCollide.destroy();
+    playerCollide.setTint(0xff0000);
 
-    this.lives--
-    this.livesText.setText("Lives: " + this.lives.toString())
+    this.lives--;
+    this.livesText.setText("Lives: " + this.lives.toString());
 
     if (this.lives <= 0) {
-      this.gameOver()
+      this.gameOver();
     } else {
-      this.time.delayedCall(1000, function () {
-        playerCollide.clearTint()
-      }, [], this)
+      this.time.delayedCall(1000, () => {
+        playerCollide.clearTint();
+        if (this.lives > 0) {
+          // Continue with player movement
+        }
+      });
     }
-  }.bind(this)
-)
+  }
+
+);
+
 
   }
 
@@ -153,9 +156,6 @@ this.physics.add.collider(
 
      // Check if the player has reached the top of the screen
   if (this.player.y <= 0) {
-    this.player.y = this.cameras.main.height - this.player.height / 2; // Send the player back to the bottom of the screen
-    this.score += 50; // Add points for reaching the top
-    this.scoreText.setText("Score: " + this.score.toString());
 
     // Check if all candies have been collected
     if (this.candyGroup.countActive() === 0) {
@@ -210,7 +210,7 @@ this.physics.add.collider(
     const cars = this.carGroup.getChildren()
 
     for (let counter = 0; counter < cars.length; counter++) {
-      const car = cars[i]
+      const car = cars[counter]
       const distance = Phaser.Math.Distance.Between(x, y, car.x, car.y)
 
       if (distance < minDistance) {
@@ -236,16 +236,6 @@ this.physics.add.collider(
       this.cameras.main.height / 2,
       "Game Over",
       this.gameOverTextStyle
-    ).setOrigin(0.5)
-  }
-
-  levelUp() {
-    this.physics.pause()
-    this.add.text(
-      this.cameras.main.width / 2,
-      this.cameras.main.height / 2,
-      "Level Up!",
-      this.scoreTextStyle
     ).setOrigin(0.5)
   }
 }
