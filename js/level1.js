@@ -71,55 +71,55 @@ class GameScene extends Phaser.Scene {
     this.createCar(4)
     this.createCar(5)
     this.createCar(6)
-    
+
 
     // create a group for candies
     this.candyGroup = this.physics.add.group()
     this.spawnCandy()
     this.spawnCandy()
     this.spawnCandy()
-    
-// Collision between player and candy
-this.physics.add.overlap(
-  this.player,
-  this.candyGroup,
-  (playerCollide, candyCollide) => {
-    candyCollide.destroy()
-    this.score += 1
-    this.scoreText.setText("Score: " + this.score.toString())
-    this.spawnCandy()
-  }
-);
 
-// Collision between player and enemy car
-this.physics.add.collider(
-  this.player,
-  this.carGroup,
-  (playerCollide, carCollide) => {
-    carCollide.destroy();
-    playerCollide.setTint(0xff0000);
+    // Collision between player and candy
+    this.physics.add.overlap(
+      this.player,
+      this.candyGroup,
+      (playerCollide, candyCollide) => {
+        candyCollide.destroy()
+        this.score += 1
+        this.scoreText.setText("Score: " + this.score.toString())
+        this.spawnCandy()
+      }
+    );
 
-    this.lives--;
-    this.livesText.setText("Lives: " + this.lives.toString());
+    // Collision between player and enemy car
+    this.physics.add.collider(
+      this.player,
+      this.carGroup,
+      (playerCollide, carCollide) => {
+        carCollide.destroy();
+        playerCollide.setTint(0xff0000);
 
-    if (this.lives <= 0) {
-      this.gameOver();
-    } else {
-      this.time.delayedCall(1000, () => {
-        playerCollide.clearTint();
-        if (this.lives > 0) {
-          // Continue with player movement
+        this.lives--;
+        this.livesText.setText("Lives: " + this.lives.toString());
+
+        if (this.lives <= 0) {
+          this.gameOver();
+        } else {
+          this.time.delayedCall(1000, () => {
+            playerCollide.clearTint();
+            if (this.lives > 0) {
+              // Continue with player movement
+            }
+          });
         }
-      });
-    }
-  }
+      }
 
-);
+    );
 
 
   }
 
-  
+
 
   update(time, delta) {
     const keyAObj = this.input.keyboard.addKey("A")
@@ -154,23 +154,23 @@ this.physics.add.collider(
     const maxY = this.cameras.main.height - this.player.height / 2
     this.player.y = Phaser.Math.Clamp(this.player.y, minY, maxY)
 
-     // Check if the player has reached the top of the screen
-  if (this.player.y <= 0) {
+    // Check if the player has reached the top of the screen
+    if (this.player.y <= 0) {
 
-    // Check if all candies have been collected
-    if (this.candyGroup.countActive() === 0) {
-      if (this.score >= 10) {
-        this.switchLevel(); // Switch level if score is 10 or more
-      } else {
-        this.levelUp(); // Level up if all candies have been collected but score is less than 10
+      // Check if all candies have been collected
+      if (this.candyGroup.countActive() === 0) {
+        if (this.score >= 10) {
+          this.switchLevel(); // Switch level if score is 10 or more
+        } else {
+          this.levelUp(); // Level up if all candies have been collected but score is less than 10
+        }
       }
     }
-  }
 
-  // Spawn a new car if all previous cars have crossed the screen
-  if (this.carGroup.countActive() < 4) {
-    this.createCar(Phaser.Math.Between(1, 4));
-  }
+    // Spawn a new car if all previous cars have crossed the screen
+    if (this.carGroup.countActive() < 4) {
+      this.createCar(Phaser.Math.Between(1, 4))
+    }
   }
 
   createCar(carType) {
