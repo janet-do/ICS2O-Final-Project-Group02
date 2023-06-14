@@ -33,8 +33,8 @@ class GameScene extends Phaser.Scene {
     // images
     this.load.image("valentineBackground", "assets/valentinestart.png");
     this.load.image("player", "assets/valentine's car.png");
-    this.load.image("candy", "assets/candy.png");
-    this.load.image("car", "assets/spookyenemy.png");
+    this.load.image("candy", "assets/heart.png");
+    this.load.image("car", "assets/valentine   enemy.png");
 
     // sounds
   }
