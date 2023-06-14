@@ -35,7 +35,6 @@ class GameScene extends Phaser.Scene {
     this.load.image("player", "assets/spookycar.png")
     this.load.image("candy", "assets/candy.png")
     this.load.image("car", "assets/spookyenemy.png")
-    this.load.image("greenBorder", "assets/border.png")
 
     // sounds
   }
