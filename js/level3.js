@@ -3,265 +3,231 @@
 /*
  * This class is the Game Scene.
  **/
-class GameScene extends Phaser.Scene {
+class GameScene3 extends Phaser.Scene {
   constructor() {
-    super({ key: "gameScene" });
-    this.player = null;
-    this.score = 0;
-    this.lives = 3; // Initialize lives to 3
-    this.scoreText = null;
-    this.livesText = null; // Text object for displaying lives
+    super({ key: "gameScene3" })
+    this.player = null
+    this.score = 0
+    this.lives = 3 // Initialize lives to 3
+    this.scoreText = null
+    this.livesText = null // Text object for displaying lives
     this.scoreTextStyle = {
       font: "65px Arial",
       fill: "#ffffff",
       align: "center",
-    };
+    }
     this.gameOverTextStyle = {
       font: "65px Arial",
       fill: "#ff0000",
       align: "center",
-    };
+    }
   }
 
   init(data) {
-    this.cameras.main.setBackgroundColor("#0x5f6e7a");
+    this.cameras.main.setBackgroundColor("#0x5f6e7a")
+    this.score = data.score || 0 // Retrieve score from the previous level or set it to 0 if not available
   }
 
   preload() {
-    console.log("Game Scene");
+    console.log("GameScene3")
 
     // images
-    this.load.image("valentineBackground", "assets/valentinestart.png");
-    this.load.image("player", "assets/valentine's car.png");
-    this.load.image("candy", "assets/heart.png");
-    this.load.image("car", "assets/valentine   enemy.png");
+    this.load.image("valentineBackground", "assets/valentinestart.png")
+    this.load.image("valentineplayer", "assets/pinkcar.png")
+    this.load.image("valentinecandy", "assets/heart.png")
+    this.load.image("valentinecar", "assets/arrow.png")
 
     // sounds
+    this.load.audio("collect", "assets/collect.mp3")
+    this.load.audio("crash", "assets/hit.mp3")
   }
 
   create(data) {
-    this.background = this.add.image(0, 0, "valentineBackground").setScale(2.0);
-    this.background.setOrigin(0, 0);
+    this.background = this.add.image(0, 0, "valentineBackground").setScale(2.0)
+    this.background.setOrigin(0, 0)
 
     this.scoreText = this.add.text(
       10,
-      10,
+       10,
       "Score: " + this.score.toString(),
       this.scoreTextStyle
-    );
+    )
 
     // Create lives text
-    this.lives = 3;
+    this.lives = 3
     this.livesText = this.add.text(
       this.cameras.main.width - 10,
       10,
       "Lives: " + this.lives.toString(),
       this.scoreTextStyle
-    );
-    this.livesText.setOrigin(1, 0);
+    )
+    this.livesText.setOrigin(1, 0)
 
-    this.player = this.physics.add.sprite(1920 / 2, 1080 - 100, "player");
+    this.player = this.physics.add.sprite(1920 / 2, 1080 - 100, "valentineplayer")
 
-    // create a group for cars
-    this.carGroup = this.add.group();
-    this.createCar(1);
-    this.createCar(2);
-    this.createCar(3);
-    this.createCar(4);
-    this.createCar(5);
-    this.createCar(6);
+    // create a group for candies and arrows
+    this.candies = this.add.group()
+    this.arrows = this.add.group() // Create a group for arrows
 
-    // create a group for candies
-    this.candyGroup = this.physics.add.group();
-    this.spawnCandy();
-    this.spawnCandy();
-    this.spawnCandy();
+    this.createCandy()
+
+    this.time.addEvent({
+      delay: 3000,
+      loop: true,
+      callback: this.createArrow,
+      callbackScope: this,
+    })
+
+    this.time.addEvent({ // Create arrows
+      delay: 2000,
+      loop: true,
+      callback: this.createArrow,
+      callbackScope: this,
+    })
 
     // Collision between player and candy
-    this.physics.add.overlap(
-      this.player,
-      this.candyGroup,
-      (playerCollide, candyCollide) => {
-        candyCollide.destroy();
-        this.score += 1;
-        this.scoreText.setText("Score: " + this.score.toString());
-        this.spawnCandy();
-      }
-    );
-
-    // Collision between player and enemy car
     this.physics.add.collider(
       this.player,
-      this.carGroup,
-      (playerCollide, carCollide) => {
-        carCollide.destroy();
-        playerCollide.setTint(0xff0000);
+      this.candies,
+      (playerCollide, candyCollide) => {
+        candyCollide.destroy()
+        this.sound.play("collect")
+        this.score++
+        this.scoreText.setText("Score: " + this.score.toString())
 
-        this.lives--;
+        this.createCandy() // Create a new candy when one is collected
+      }
+    )
+
+    // Collision between player and arrow
+    this.physics.add.collider(
+      this.player,
+      this.arrows,
+      (playerCollide, arrowCollide) => {
+        arrowCollide.destroy()
+        playerCollide.setTint(0xff0000)
+        this.sound.play("crash")
+        this.lives--
         this.livesText.setText("Lives: " + this.lives.toString());
 
         if (this.lives <= 0) {
-          this.gameOver();
+          this.gameOver()
         } else {
           this.time.delayedCall(1000, () => {
-            playerCollide.clearTint();
+            playerCollide.clearTint()
             if (this.lives > 0) {
               // Continue with player movement
             }
-          });
+          })
         }
       }
-    );
-  }
-    moveCarsHorizontally() {
-        const moveDistance = 100; // Adjust this value to control the horizontal movement distance
-      
-        this.carGroup.getChildren().forEach((car) => {
-          this.tweens.add({
-            targets: car,
-            x: car.x + moveDistance,
-            duration: 2000, // Adjust this value to control the movement speed
-            yoyo: true,
-            repeat: -1
-          });
-        });
-  }
-  update(time, delta) {
-    const keyAObj = this.input.keyboard.addKey("A");
-    const keyDObj = this.input.keyboard.addKey("D");
-    const keyWObj = this.input.keyboard.addKey("W");
-    const keySObj = this.input.keyboard.addKey("S");
+    )
 
-    const rotationSpeed = 0.08; // Adjust this value to control the rotation speed
-    const moveSpeed = 5; // Adjust this value to control the movement speed
+    // Create the level text
+    this.levelText = this.add.text(
+      this.cameras.main.width / 2,
+      this.cameras.main.height / 2,
+      "This is the final level, keep going as much as you can and beat your high score.",
+      {
+        font: "32px Arial",
+        fill: "#ffffff",
+        align: "center"
+      }
+    )
+    this.levelText.setOrigin(0.5)
+    this.levelText.setVisible(false)
+  }
+
+  update(time, delta) {
+    const keyAObj = this.input.keyboard.addKey("A")
+    const keyDObj = this.input.keyboard.addKey("D")
+    const keyWObj = this.input.keyboard.addKey("W")
+    const keySObj = this.input.keyboard.addKey("S")
+
+    const moveSpeed = 10
+    const rotationSpeed = Math.PI / 180 * 5
 
     if (keyAObj.isDown) {
-      this.player.x -= moveSpeed; // Move left
-      this.player.rotation = -rotationSpeed; // Rotate left slightly
+      this.player.x -= moveSpeed // Move left
+      this.player.rotation = -rotationSpeed // Rotate left
     } else if (keyDObj.isDown) {
-      this.player.x += moveSpeed; // Move right
-      this.player.rotation = rotationSpeed; // Rotate right slightly
+      this.player.x += moveSpeed // Move right
+      this.player.rotation = rotationSpeed // Rotate right
     } else {
-      this.player.rotation = 0; // Reset rotation when no rotation keys are pressed
+      this.player.rotation = 0 // Reset rotation if no movement
     }
 
     if (keyWObj.isDown) {
-      this.player.y -= moveSpeed; // Move up
+      this.player.y -= moveSpeed // Move up
     } else if (keySObj.isDown) {
-      this.player.y += moveSpeed; // Move down
+      this.player.y += moveSpeed // Move down
     }
 
-    // Limit the players bounds to the game screen
-    const minX = this.player.width / 2;
-    const maxX = this.cameras.main.width - this.player.width / 2;
-    this.player.x = Phaser.Math.Clamp(this.player.x, minX, maxX);
-    const minY = this.player.height / 2;
-    const maxY = this.cameras.main.height - this.player.height / 2;
-    this.player.y = Phaser.Math.Clamp(this.player.y, minY, maxY);
-
-    // Check if the player has reached the top of the screen
-    if (this.player.y <= 0) {
-      // Check if all candies have been collected
-      if (this.candyGroup.countActive() === 0) {
-        if (this.score >= 10) {
-          this.switchLevel(); // Switch level if score is 10 or more
-        } else {
-          this.levelUp(); // Level up if all candies have been collected but score is less than 10
-        }
-      }
+    if (this.score >= 3 && !this.levelText.visible) {
+      this.levelText.setVisible(true)
     }
 
-    // Spawn a new car if all previous cars have crossed the screen
-    if (this.carGroup.countActive() < 4) {
-      this.createCar(Phaser.Math.Between(1, 4));
-    }
+    // Limit the player's bounds to the game screen
+    const minX = this.player.width / 2
+    const maxX = this.cameras.main.width - this.player.width / 2
+    this.player.x = Phaser.Math.Clamp(this.player.x, minX, maxX)
+    const minY = this.player.height / 2
+    const maxY = this.cameras.main.height - this.player.height / 2
+    this.player.y = Phaser.Math.Clamp(this.player.y, minY, maxY)
   }
 
-  createCar(carType) {
-    const centerX = this.cameras.main.width / 2;
-    const centerY = this.cameras.main.height / 2;
-    const minDistance = 300; // Minimum distance between cars
-    const playerSafeDistance = 200; // Minimum distance between the player and a spawned car
-
-    let carXLocation, carYLocation;
-    let isOverlapping = true;
-    // Keep generating random coordinates until a non-overlapping position is found
-    while (isOverlapping) {
-      carXLocation = Phaser.Math.FloatBetween(centerX - 400, centerX + 400);
-      carYLocation = Phaser.Math.FloatBetween(centerY - 400, centerY + 400);
-
-      // Calculate the distance between the car and the player
-      const distanceToPlayer = Phaser.Math.Distance.Between(
-        this.player.x,
-        this.player.y,
-        carXLocation,
-        carYLocation
-      );
-
-      // Check if the car is too close to the player
-      if (distanceToPlayer > playerSafeDistance) {
-        // Check if the car overlaps with other cars
-        isOverlapping = this.checkCarOverlap(
-          carXLocation,
-          carYLocation,
-          minDistance
-        );
-      }
-    }
-
-    const car = this.physics.add.sprite(carXLocation, carYLocation, "car");
-
-    car.setCollideWorldBounds(true);
-    car.setBounce(1, 1);
-    car.setImmovable(true);
-
-    this.carGroup.add(car);
-  }
-
-  checkCarOverlap(x, y, minDistance) {
-    const cars = this.carGroup.getChildren();
-
-    for (let counter = 0; counter < cars.length; counter++) {
-      const car = cars[counter];
-      const distance = Phaser.Math.Distance.Between(x, y, car.x, car.y);
-
-      if (distance < minDistance) {
-        return true; // Overlapping cars found
-      }
-    }
-
-    return false; // No overlapping cars found
-  }
-
-  spawnCandy() {
+  createCandy() {
     const candyXLocation = Phaser.Math.Between(
       100,
       this.cameras.main.width - 100
-    );
+    )
     const candyYLocation = Phaser.Math.Between(
       100,
       this.cameras.main.height - 100
-    );
-    const candy = this.candyGroup.create(
+    )
+    const candy = this.physics.add.sprite(
       candyXLocation,
       candyYLocation,
-      "candy"
-    );
-    candy.setCollideWorldBounds(true);
-    candy.setBounce(1, 1);
+      "valentinecandy"
+    )
+
+    candy.setCollideWorldBounds(true)
+    candy.setBounce(1, 1)
+
+    this.candies.add(candy)
+  }
+
+  createArrow() {
+    const arrowXLocation = Phaser.Math.Between(
+      100,
+      this.cameras.main.width - 100
+    )
+    const arrowYLocation = 0
+    const arrow = this.physics.add.sprite(
+      arrowXLocation,
+      arrowYLocation,
+      "valentinecar"
+    )
+
+    arrow.setCollideWorldBounds(true)
+    arrow.setBounce(1, 1)
+
+    arrow.setVelocity(0, Phaser.Math.Between(300, 500)) // Set the vertical velocity of the arrow
+
+    this.arrows.add(arrow)
   }
 
   gameOver() {
-    this.physics.pause();
-    this.add
-      .text(
-        this.cameras.main.width / 2,
-        this.cameras.main.height / 2,
-        "Game Over",
-        this.gameOverTextStyle
-      )
-      .setOrigin(0.5);
+    // Save the score in localStorage
+    localStorage.setItem("score", this.score.toString())
+
+    this.physics.pause()
+    this.gameOverTextStyle = this.add
+    .text(1920 / 2, 1080 / 2, "GAME OVER click to restart", this.gameOverTextStyle)
+    .setOrigin(0.5)
+  this.gameOverTextStyle.setInteractive({ useHandCursor: true })
+  this.gameOverTextStyle.on("pointerdown", () => this.scene.start("gameScene"))
   }
 }
 
-export default GameScene;
+export default GameScene3
