@@ -92,7 +92,7 @@ class GameScene extends Phaser.Scene {
         this.spawnCandy()
 
         // Check if the player reached 5 points
-        if (this.score >= 5) {
+        if (this.score >= 10) {
           this.createNextLevelButton()
         }
       }
