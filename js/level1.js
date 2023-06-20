@@ -247,7 +247,7 @@ class GameScene extends Phaser.Scene {
   gameOver() {
     this.physics.pause()
     this.gameOverTextStyle = this.add
-    .text(1920 / 2, 1080 / 2, "GAME OVER", this.gameOverTextStyle)
+    .text(1920 / 2, 1080 / 2, "GAME OVER click to restart", this.gameOverTextStyle)
     .setOrigin(0.5)
   this.gameOverTextStyle.setInteractive({ useHandCursor: true })
   this.gameOverTextStyle.on("pointerdown", () => this.scene.start("gameScene"))
